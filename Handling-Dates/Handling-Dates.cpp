@@ -56,13 +56,160 @@ std::string Date::month()
 {
     switch (m_month)
     {
-        // to-do
+    case Month_January: return "January";
+    case Month_Feburary: return "Feburary";
+    case Month_March: return "March";
+    case Month_April: return "April";
+    case Month_May: return "May";
+    case Month_June: return "June";
+    case Month_July: return "Junly";
+    case Month_August: return "August";
+    case Month_September: return "September";
+    case Month_October: return "October";
+    case Month_November: return "November";
+    case Month_December: return "December";
+    default: throw std::runtime_error("unknown month");
     }
     return "";
-
-
 }
 
+#define self this
+
+std::string Date::dayOfWeek()
+{
+    switch (this->dayOfTheWeek())
+    {
+    case DayOfTheWeek_Sunday: return "Sunday";
+    case DayOfTheWeek_Monday: return "Monday";
+    case DayOfTheWeek_Tuesday: return "Tuesday";
+    case DayOfTheWeek_Wednesday: return "Wednesday";
+    case DayOfTheWeek_Thursday: return "Thursday";
+    case DayOfTheWeek_Friday: return "Friday";
+    case DayOfTheWeek_Saturday: return "Saturday";
+    }
+}
+
+void Date::addTradingDays(int numDays)
+{
+    while (!isTradingDay())
+    {
+        ++*this;
+    }
+
+    for (int i = 0; i < numDays; i++)
+    {
+        ++* this;
+        while (!isTradingDay())
+        {
+            ++* this;
+        }
+
+    }
+}
+
+void Date::subtract(int numDays)
+{
+    for (int i = 0; i < numDays; i++)
+    {
+        --* this;
+    }
+}
+
+void Date::subtractTradingDays(int numDays)
+{
+    while (!isTradingDay())
+    {
+        --* this;
+    }
+
+    for (int i = 0; i < numDays; i++)
+    {
+        --* this;
+        while (!isTradingDay())
+        {
+            --* this;
+        }
+    }
+}
+
+int Date::dateDifference(const Date& date)
+{
+    Date d = *this;
+
+    if (d < date)
+    {
+        int diff = 0;
+        
+        while (d < date)
+        {
+            ++d;
+            ++diff;
+        }
+        return diff;
+    }
+
+    int diff = 0;
+    while (date < d)
+    {
+        --d;
+        --diff;
+    }
+    return diff;
+}
+
+int Date::tradingDateDifference(const Date& date)
+{
+    Date d = *this;
+
+    if (d < date)
+    {
+        int diff = 0;
+        while (!d.isTradingDay()) ++d;
+        while (d < date)
+        {
+            ++d;
+            ++diff;
+            while (!d.isTradingDay()) ++d;
+        }
+        return diff;
+    }
+
+    int diff = 0;
+    while (!d.isTradingDay()) --d;
+    while (date < d)
+    {
+        --d;
+        --diff;
+        while(!d.isTradingDay()) --d;
+    }
+    return diff;
+}
+
+DayOfTheWeek Date::dayOfTheWeek()
+{
+    if (m_weekDay != DayOfTheWeek_Unknown) return m_weekDay;
+
+    int day = 1;
+    Date d(1900, 1, 1);
+    for (;d < *this; ++d)
+    {
+        if (day == 6) day = 0;
+        else day++;
+    }
+    m_weekDay = static_cast<DayOfTheWeek>(day);
+    return m_weekDay;
+}
+
+bool Date::isWeekDay()
+{
+    DayOfTheWeek dayOfWeek = dayOfTheWeek();
+
+    if (dayOfWeek == DayOfTheWeek_Sunday || dayOfWeek == DayOfTheWeek_Saturday)
+    {
+        return false;
+    }
+    return true;
+}
 
 int main()
 {
